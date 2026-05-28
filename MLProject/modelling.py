@@ -3,6 +3,12 @@ from sklearn.neighbors import NearestNeighbors
 import mlflow
 import mlflow.sklearn
 
+class PredictableNearestNeighbors(NearestNeighbors):
+    def predict(self, X):
+        # Fungsi formalitas biar Docker gak ngambek
+        distances, indices = self.kneighbors(X)
+        return indices
+
 # Main function / Modelling
 def main():
     print("=== Mulai Membaca Dataset ===")
@@ -22,7 +28,7 @@ def main():
         mlflow.log_param("metric", matrix)
 
         print(f"Melatih model KNN dengan K {k} dan metric {matrix}")
-        model = NearestNeighbors(n_neighbors=k, metric=matrix)
+        model = PredictableNearestNeighbors(n_neighbors=k, metric=matrix)
         model.fit(features)
 
         distances, _ = model.kneighbors(features)

@@ -12,10 +12,10 @@ jobs:
         
         steps:
             - name: Run actions/checkout@v3
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
             
             - name: Set up Python 3.12.7
-              uses: actions/setup-python@v4
+              uses: actions/setup-python@v5
               with:
                 python-version: 3.12.7
 
@@ -26,7 +26,7 @@ jobs:
             
             - name: Install dependencies
               run: |
-                pip install mlflow==2.19.0 pandas scikit-learn dagshub
+                pip install mlflow pandas scikit-learn dagshub
 
             - name: Run mlflow project
               run: |

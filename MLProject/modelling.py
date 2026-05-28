@@ -18,8 +18,8 @@ def main():
         k = 3
         matrix = 'cosine'
 
-        mlflow.log_param(f"n_neighbours {k}")
-        mlflow.log_param(f"metric {matrix}")
+        mlflow.log_param("n_neighbours", k)
+        mlflow.log_param("metric", matrix)
 
         print(f"Melatih model KNN dengan K {k} dan metric {matrix}")
         model = NearestNeighbors(n_neighbors=k, metric=matrix)

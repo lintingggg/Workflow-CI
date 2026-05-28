@@ -1,7 +1,7 @@
-name: pipeline_sistemrekomendasi_film
+name: Movie_Recommendation_Pipeline
 
-conda-env: conda.yml
+conda_env: conda.yaml
 
-entry-points:
+entry_points:
   main:
     command: "python modelling.py"

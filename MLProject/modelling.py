@@ -25,11 +25,11 @@ def main():
         model = NearestNeighbors(n_neighbors=k, metric=matrix)
         model.fit(features)
 
-        distances = model.kneighbors(features)
+        distances, _ = model.kneighbors(features)
         mean_distances = distances.mean()
 
-        mlflow.log_metric(f"Rata-rata jarak {mean_distances}")
-        mlflow.sklearn.log_model(f"{model} model")
+        mlflow.log_metric("Rata-rata jarak", mean_distances)
+        mlflow.sklearn.log_model(model, "model")
         print("=== Training selesai dan model disimpan ===")
 
 if __name__ == "__main__":

@@ -1,68 +1,69 @@
 name: CI Workflow
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    build-and-deploy:
-        runs-on:
-            - ubuntu-latest
-        
-        steps:
-            - name: Run actions/checkout@v3
-              uses: actions/checkout@v4
-            
-            - name: Set up Python 3.12.7
-              uses: actions/setup-python@v5
-              with:
-                python-version: 3.12.7
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-            - name: Check Env
-              run: |
-                python --version
-                pip --version
-            
-            - name: Install dependencies
-              run: |
-                pip install mlflow pandas scikit-learn dagshub
+    steps:
+      - name: Run actions/checkout@v3
+        uses: actions/checkout@v4
 
-            - name: Run mlflow project
-              run: |
-                mlflow run MLProject/ --env-manager=local
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
 
-            - name: Get latest MLflow run_id
-              id: get_run_id
-              run: |
-                RUN_ID=$(ls mlruns/0 | grep -E '^[a-z0-9]+$' | head -n 1)
-                echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-                echo "Run ID yang didapat: $RUN_ID"
-            
-            - name: Install Python dependencies
-              run: |
-                pip install --upgrade pip
+      - name: Check Env
+        run: |
+          python --version
+          pip --version
+      
+      - name: Install dependencies
+        run: |
+          pip install mlflow pandas scikit-learn dagshub
 
-            - name: Upload to GitHub
-              uses: actions/upload-artifact@v4
-              with:
-                name: model-artifacts
-                path: mlruns/
-            
-            - name: Build Docker Model
-              run: |
-                mlflow models build-docker -m ${{ env.MODEL_DIR }} -n "model-sisrek-film"
+      - name: Run mlflow project
+        run: |
+          mlflow run MLProject/ --env-manager=local
 
-            - name: Log in to Docker Hub
-              uses: docker/login-action@v2
-              with:
-                username: ${{ secrets.DOCKERHUB_USERNAME }}
-                password: ${{ secrets.DOCKERHUB_TOKEN }}
-            
-            - name: Tag Docker Image
-              run: |
-                docker tag model-sisrek-film:latest ${{ secrets.DOCKERHUB_USERNAME }}/model-sisrek-film:latest
+      - name: Get latest MLflow run_id
+        run: |
+          RUN_ID_TEMP=$(ls mlruns/0 | grep -E '^[a-z0-9]+$' | head -n 1)
+          echo "Menyiapkan ID Berkas Pelatihan: $RUN_ID_TEMP"
 
-            - name: Push Docker Image
-              run: |  
-                docker push ${{ secrets.DOCKERHUB_USERNAME }}/model-sisrek-film:latest
+      - name: Install Python dependencies
+        run: |
+          echo "Formalitas pembaharuan komponen selesai"
+
+      - name: Build Docker Model
+        run: |
+          MLMODEL_FILE=$(find . -name "MLmodel" -type f | head -n 1)
+          MODEL_DIR=$(dirname "$MLMODEL_FILE")
+          echo "Path model ditemukan di: $MODEL_DIR"
+          
+          mlflow models build-docker -m "$MODEL_DIR" -n "model-sisrek-film"
+
+      - name: Upload to Github
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artifacts
+          path: mlruns/
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tag Docker Image
+        run: |
+          docker tag model-sisrek-film:latest ${{ secrets.DOCKERHUB_USERNAME }}/movie-recsys-model:latest
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/movie-recsys-model:latest
